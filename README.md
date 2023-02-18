@@ -1,5 +1,7 @@
 A biblioteca LocalData é uma biblioteca .NET Standard 2.0 que fornece uma classe DataFile para gerenciar arquivos de dados criptografados.
 
+-> https://www.nuget.org/packages/LocalData
+
 Uso da biblioteca
 Para usar a biblioteca LocalData, você precisa adicionar a referência ao seu projeto e importar o namespace LocalData no seu código.
 
@@ -26,10 +28,15 @@ Métodos
 A classe DataFile fornece os seguintes métodos:
 
 Clear(): Apaga o arquivo criptografado.
+
 VerifyExistCFG(string variable): Verifica se uma variável com o nome especificado existe no arquivo criptografado.
+
 LoadCfg<T>(string variable, T defaultValue): Carrega o valor de uma variável com o nome especificado do arquivo criptografado. Se a variável não existir, retorna o valor padrão especificado em defaultValue.
+  
 SaveCfg<T>(string variable, T value): Salva o valor especificado em value para uma variável com o nome especificado em variable.
+  
 GetAllVariableNames(): Retorna um objeto IEnumerable<string> que contém o nome de todas as variáveis armazenadas no arquivo criptografado.
+  
 CryptFileHandler
 A classe CryptFileHandler é usada internamente pela classe DataFile para criptografar e descriptografar dados. Você não precisa usar essa classe diretamente em seu código.
 
@@ -50,3 +57,42 @@ Algumas restrições do uso da biblioteca e do código apresentado incluem:
 7 - Não é recomendado trabalhar com muitos volumes de dados pois a biblioteca salva tudo diretamente no armazenamento do diposito.
 
 8 - Não ultilize quebras de linhas nas string, o caractere \n é ultilizado para a separação de dados.
+  
+  
+  --> Global usage example <--
+```  
+using System;
+using LocalData;
+namespace Exemplo
+{
+    internal class Test
+    {
+        private static void Main(string[] args)
+        {
+            DataFile dataFile = new DataFile();
+            //save string
+            dataFile.SaveCfg("connectionstring", "Server=127.0.0.1;Database=myDataBase;Uid=Root;Pwd=abc123;");
+            //load string
+            string cnn = dataFile.LoadCfg("connectionstring", "");
+
+            //other types of data
+            int time = dataFile.LoadCfg<int>("time", 15);
+            bool isTest = dataFile.LoadCfg<bool>("isTest", false);
+
+            //The second parameter serves as the default value if the data has never been saved.
+            //If the data has never been saved, the default value will be saved.
+            //If the data has been saved, the default value will be ignored.
+            if (dataFile.LoadCfg<bool>("FirstOpen", true))
+            {
+                dataFile.SaveCfg<bool>("FirstOpen", false);
+                Console.WriteLine("First time");
+            }
+            else
+            {
+                Console.WriteLine("Not First time");
+            }
+            Console.ReadKey();
+        }
+    }
+}
+```
