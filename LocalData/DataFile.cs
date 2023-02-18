@@ -6,16 +6,13 @@ namespace LocalData
 {
     public class DataFile
     {
-
         private readonly CryptFileHandler MyEncryptedFile;
         private readonly string VariablePrefix;
-
         public DataFile()
         {
             MyEncryptedFile = new CryptFileHandler("date.bin", "A-32-CHARACTER-PASSWORD-!@#$%¨&*", "16CHARACTERPASSW");
             VariablePrefix = "#PRE_";
         }
-
         public DataFile(string filePath, string key, string iv, string customPrefix = null)
         {
             MyEncryptedFile = new CryptFileHandler(filePath, key, iv);
@@ -24,7 +21,6 @@ namespace LocalData
             else
             VariablePrefix = customPrefix;
         }
-
         public  void Clear() => System.IO.File.Delete(MyEncryptedFile.FilePath);
 
         public  bool VerifyExistCFG(string variable)
