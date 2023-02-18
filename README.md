@@ -1,4 +1,3 @@
-Documentação da biblioteca LocalData
 A biblioteca LocalData é uma biblioteca .NET Standard 2.0 que fornece uma classe DataFile para gerenciar arquivos de dados criptografados.
 
 Uso da biblioteca
