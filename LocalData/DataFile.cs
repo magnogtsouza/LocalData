@@ -1,74 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace LocalData
 {
-    internal class DataFile
+    public class DataFile
     {
-        private static readonly CryptFileHandler MyEncryptedFile = new CryptFileHandler("date.bin", "A 32 CHARACTER PASSWORD !@#$%¨&*", "16CHARACTERPASSW");
-        private static readonly string VariablePrefix = "#54FV_";
 
-        public static void Clear() => System.IO.File.Delete(MyEncryptedFile.FilePath);
+        private readonly CryptFileHandler MyEncryptedFile;
+        private readonly string VariablePrefix;
 
-        public static bool verifyExistCFG(string variable)
-        {          
-            variable = VariablePrefix + variable + "=";
+        public DataFile()
+        {
+            MyEncryptedFile = new CryptFileHandler("date.bin", "A-32-CHARACTER-PASSWORD-!@#$%¨&*", "16CHARACTERPASSW");
+            VariablePrefix = "#PRE_";
+        }
+
+        public DataFile(string filePath, string key, string iv, string customPrefix = null)
+        {
+            MyEncryptedFile = new CryptFileHandler(filePath, key, iv);
+            if (customPrefix == null)
+                VariablePrefix = "#PRE_";
+            else
+            VariablePrefix = customPrefix;
+        }
+
+        public  void Clear() => System.IO.File.Delete(MyEncryptedFile.FilePath);
+
+        public  bool VerifyExistCFG(string variable)
+        {
+            variable = _getVariableKey(variable);
             if (!System.IO.File.Exists(MyEncryptedFile.FilePath))
             {
                 return false;
             }
-            string ss = MyEncryptedFile.LoadString();
-            if (!ss.Contains(variable))
-            {
-                return false;
-            }
-            return true;
+            string fileContent = MyEncryptedFile.LoadString();
+            return fileContent.Contains(variable);
         }
 
-        public static string loadCfg(string variable, string valueDefull = "")
+        public  T LoadCfg<T>(string variable, T defaultValue)
         {
-            variable = VariablePrefix + variable + "=";
-            if (!verifyExistCFG(variable.Replace(VariablePrefix, "").Replace("=", "").Trim()))
-            {
-                Save(variable.Replace(VariablePrefix, "").Replace("=", "").Trim(), valueDefull);
-                return valueDefull;
-            }
-            string[] MyCfg = MyEncryptedFile.LoadString().Replace("\0", "").Split('\n');
-            string resut = MyCfg.ToList().FirstOrDefault(x => x.Contains(variable)).Split('=')[1];
-            return resut;
+            string result = _loadCfg(variable, defaultValue.ToString());
+            return (T)Convert.ChangeType(result, typeof(T));
         }
 
-        public static bool loadCfg(string variable, bool valueDefull)
+        public  bool SaveCfg<T>(string variable, T value)
         {
-            string res = loadCfg(variable, valueDefull ? "1" : "0");
-            return res.Contains('1');
+            string stringValue = Convert.ToString(value);
+            return _save(variable, stringValue);
         }
-        public static int loadCfg(string variable, int valueDefull)
+        public  IEnumerable<string> GetAllVariableNames()
         {
-            try
+            string[] lines = MyEncryptedFile.LoadString().Replace("\0", "").Split('\n');
+            foreach (string line in lines)
             {
-                string res = loadCfg(variable, valueDefull.ToString());
-                return Convert.ToInt32(res);
-            }
-            catch
-            {
-                return valueDefull;
+                int index = line.IndexOf('=');
+                if (index > 0 && line.StartsWith(VariablePrefix))
+                {
+                    yield return line.Substring(VariablePrefix.Length, index - VariablePrefix.Length);
+                }
             }
         }
 
-        private static string GetVariableKey(string variable)
+        private  string _getVariableKey(string variable)
         {
-            return variable = VariablePrefix + variable + "=";
+            return VariablePrefix + variable + "=";
         }
-        public static bool Save(string variable, string value)
+
+        private  bool _save(string variable, string value)
         {
-            string variableKey = GetVariableKey(variable);
+            string variableKey = _getVariableKey(variable);
 
             if (!System.IO.File.Exists(MyEncryptedFile.FilePath))
             {
-                MyEncryptedFile.SaveString(variableKey + "=" + value);
+                MyEncryptedFile.SaveString(variableKey + value);
                 return true;
             }
 
@@ -77,17 +82,25 @@ namespace LocalData
 
             if (index == -1)
             {
-                MyEncryptedFile.SaveString(variableKey + "=" + value + "\n" + MyEncryptedFile.LoadString());
+                MyEncryptedFile.SaveString(variableKey + value + "\n" + MyEncryptedFile.LoadString());
                 return true;
             }
 
-            lines[index] = variableKey + "=" + value;
+            lines[index] = variableKey + value;
             MyEncryptedFile.SaveString(string.Join("\n", lines));
             return true;
         }
-
-        public static bool Save(string variable, bool value) => Save(variable, value ? "1" : "0");
-
-        public static bool Save(string variable, int value) => Save(variable, value.ToString());
+        private  string _loadCfg(string variable, string defaultValue = "")
+        {
+            variable = _getVariableKey(variable);
+            if (!VerifyExistCFG(variable.Replace(VariablePrefix, "").Replace("=", "").Trim()))
+            {
+                _save(variable.Replace(VariablePrefix, "").Replace("=", "").Trim(), defaultValue);
+                return defaultValue;
+            }
+            string[] cfgLines = MyEncryptedFile.LoadString().Replace("\0", "").Split('\n');
+            string result = cfgLines.FirstOrDefault(x => x.Contains(variable)).Split('=')[1];
+            return result;
+        }
     }
 }
