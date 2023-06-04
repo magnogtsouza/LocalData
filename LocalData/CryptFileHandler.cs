@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -21,19 +20,26 @@ namespace LocalData
 
         public CryptFileHandler(string filePath, string key, string iv)
         {
+            key.PadLeft(32, '0');
+            key.Substring(0, 32);
+            iv.PadLeft(16, '0');
+            iv.Substring(0, 16);
             byte[] keyBytes = Encoding.UTF8.GetBytes(key);
             byte[] ivBytes = Encoding.UTF8.GetBytes(iv);
-            if (keyBytes.Length != 32)
+
+            if (keyBytes.Length > 32)
             {
-                throw new NotImplementedException($"Internal encryption error, 32 character password required.");
+                Console.WriteLine("Excess bytes found: They are being removed from the encryption key...");
+                Array.Resize(ref keyBytes, 32);
             }
-            if (ivBytes.Length != 16)
+            if (ivBytes.Length > 16)
             {
-                throw new NotImplementedException($"Internal encryption error, 16 character password required.");
+                Console.WriteLine("Excess bytes found: They are being removed from the encryption key...");
+                Array.Resize(ref ivBytes, 16);
             }
-            if (keyBytes == null || ivBytes == null)
+            if (keyBytes == null || ivBytes == null || keyBytes.Length + ivBytes.Length != 48)
             {
-                throw new NotImplementedException($"Internal encryption error: 0X0000");
+                throw new NotImplementedException($"Internal encryption error:The amount of total bytes does not satisfy the requirements...\n required:{48}\n contains:{keyBytes.Length + ivBytes.Length}");
             }
 
             _key = keyBytes;
