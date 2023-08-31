@@ -15,6 +15,11 @@ namespace LocalData
         }
         public DataFile(string filePath, string key, string iv, string customPrefix = null)
         {
+            string dir = System.IO.Path.GetDirectoryName(filePath);
+            if (System.IO.Directory.Exists(dir))
+            {
+                System.IO.Directory.CreateDirectory(dir);
+            }
             MyEncryptedFile = new CryptFileHandler(filePath, key, iv);
             if (customPrefix == null)
                 VariablePrefix = "#PRE_";
