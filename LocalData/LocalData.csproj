@@ -8,7 +8,9 @@
     <PackageProjectUrl>https://github.com/magnogtsouza/LocalData</PackageProjectUrl>
     <RepositoryUrl>https://github.com/magnogtsouza/LocalData</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
+    <AssemblyVersion>1.0.4</AssemblyVersion>
+    <FileVersion>1.0.4</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

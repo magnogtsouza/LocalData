@@ -20,13 +20,12 @@ namespace LocalData
 
         public CryptFileHandler(string filePath, string key, string iv)
         {
-            key.PadLeft(32, '0');
-            key.Substring(0, 32);
-            iv.PadLeft(16, '0');
-            iv.Substring(0, 16);
+            key = key.PadLeft(32, '0');
+            key = key.Substring(0, 32);
+            iv = iv.PadLeft(16, '0');
+            iv = iv.Substring(0, 16);
             byte[] keyBytes = Encoding.UTF8.GetBytes(key);
             byte[] ivBytes = Encoding.UTF8.GetBytes(iv);
-
             if (keyBytes.Length > 32)
             {
                 Console.WriteLine("Excess bytes found: They are being removed from the encryption key...");
@@ -41,7 +40,6 @@ namespace LocalData
             {
                 throw new NotImplementedException($"Internal encryption error:The amount of total bytes does not satisfy the requirements...\n required:{48}\n contains:{keyBytes.Length + ivBytes.Length}");
             }
-
             _key = keyBytes;
             _iv = ivBytes;
             FilePath = filePath;
